@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAOS V51 2 TAB</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --accent:#38bdf8; --green:#22c55e; --red:#ef4444; --blue:#3b82f6; --purple:#a855f7; --yellow:#eab308;}
+  body { font-family: Inter, sans-serif; background:var(--bg); color:var(--text); padding:10px; margin:0; font-size:12px; }
+  h1 { text-align:center; color:var(--accent); font-size:18px; margin:0 0 10px 0; }
+.card { background:var(--card); padding:10px; border-radius:12px; margin-bottom:10px; box-shadow:0 4px 6px #0002; }
+  table { width:100%; border-collapse:collapse; font-size:10px; }
+  th, td { border:1px solid #334155; padding:4px 3px; white-space:nowrap; text-align:center; line-height:1.2; vertical-align:top; }
+  th { background:#334155; position:sticky; top:0; color:#fff; font-size:11px; font-weight:700; }
+  td.text-left { text-align:left; white-space:normal; word-break:break-word; max-width:130px; line-height:1.3; }
+  tr.naos-row { background:#fde047!important; color:#000!important; font-weight:700; }
+  tr.oos-row { background:#ef4444!important; color:#fff!important; font-weight:700; }
+  input[type=checkbox] { width:18px; height:18px; accent-color:#2563eb; }
+.grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; text-align:center; }
+.stat { font-size:16px; font-weight:800; color:var(--accent); }
+.stat.green { color:var(--green); }
+.stat.purple { color:var(--purple); }
+  input, select, button { width:100%; padding:10px; border-radius:8px; border:1px solid #475569; background:#0f172a; color:var(--text); font-size:12px; font-weight:600; }
+.controls { display:grid; grid-template-columns:1fr; gap:8px; margin:8px 0; }
+.controls-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.pager { display:flex; gap:8px; justify-content:center; align-items:center; margin-top:8px; font-size:12px; font-weight:600; }
+.pager button { padding:10px; }
+.filter-btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+.filter-btns button { border:none; font-weight:800; font-size:13px; padding:12px; cursor:pointer; border-radius:12px; color:#fff; }
+.btn-semua { background:#475569; }
+.btn-naos { background:#ca8a04; }
+.btn-oos { background:#b91c1c; }
+.btn-atur { background:var(--accent); color:#0f172a; font-weight:800; }
+.btn-hapus { background:#ef4444; color:#fff; font-weight:800; }
+.btn-refresh { background:#22c55e; color:#fff; font-weight:800; }
+.btn-export { background:#16a34a; color:#fff; font-weight:800; }
+.btn-ss { background:#a855f7; color:#fff; font-weight:800; }
+.btn-reset-check { background:var(--yellow); color:#0f172a; font-weight:800; }
+.btn-save { background:#0ea5e9; color:#fff; font-weight:800; }
+.info-hlm { text-align:center; color:var(--accent); font-weight:700; margin:8px 0; font-size:12px; }
+#tblWrapper { overflow:auto; max-height:75vh; border-radius:10px; }
+.loading { text-align:center; padding:20px; color:var(--accent); font-weight:700; font-size:14px; }
+.modal { display:none; position:fixed; z-index:99; left:0; top:0; width:100%; height:100%; background:#000a; }
+.modal-content { background:var(--card); margin:5% auto; padding:14px; border-radius:12px; width:95%; max-width:500px; max-height:80vh; overflow:auto; font-size:12px; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.modal-header h3 { margin:0; font-size:14px; }
+.modal-close { font-size:24px; cursor:pointer; color:#94a3b8; }
+.col-list label { display:flex; align-items:center; gap:8px; padding:10px; background:#0f172a; border-radius:8px; margin-bottom:6px; cursor:pointer; font-size:12px; font-weight:600; }
+.col-list input { width:18px; height:18px; accent-color:var(--accent); }
+.multi-select { position:relative; }
+.multi-select-btn { width:100%; text-align:left; }
+.multi-dropdown { display:none; position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid #475569; border-radius:8px; max-height:300px; overflow:auto; z-index:50; padding:8px; margin-top:6px; }
+.multi-dropdown label { display:flex; align-items:center; gap:8px; padding:8px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
+.multi-dropdown label:hover { background:#334155; }
+.multi-dropdown input { width:16px; height:16px; }
+.summary-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.summary-header h3 { margin:0; font-size:14px; display:flex; align-items:center; gap:6px; }
+.btn-hide { background:#475569; border:none; color:#fff; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:11px; }
+.summary-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+.summary-card { background:#0f172a; border-radius:10px; padding:8px 6px; box-shadow:0 2px 4px #0003; border:1px solid #334155; }
+.summary-card.kat { font-size:10px; font-weight:800; color:#94a3b8; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.3px; line-height:1.1; }
+.summary-card.total { font-size:14px; font-weight:800; margin-bottom:4px; }
+.summary-card.row { display:flex; justify-content:space-between; font-size:10px; margin:2px 0; font-weight:600; }
+.summary-card.row span:first-child { color:#94a3b8; }
+.green { color:var(--green); }
+.red { color:var(--red); }
+.blue { color:var(--blue); }
+.purple { color:var(--purple); }
+.tabs { display:flex; gap:8px; margin-bottom:10px; }
+.tab-btn { flex:1; padding:12px; border:none; border-radius:12px; background:#334155; color:var(--text); font-weight:800; cursor:pointer; }
+.tab-btn.active { background:var(--accent); color:#0f172a; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+</style>
+</head>
+<body>
+<h1>NAOS V51</h1>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('monitor')">📋 Monitor</button>
+  <button class="tab-btn" onclick="switchTab('report')">📊 Laporan</button>
+</div>
+
+<div id="tab-monitor" class="tab-content active">
+<div class="card">
+  <button class="btn-refresh" id="btnRefresh">🔄 Tarik Data Dari Google Sheet</button>
+  <div class="controls">
+    <select id="sortSelect"><option value="">Sort</option><option value="replen_desc">Replen Tertinggi</option><option value="node_asc">Node A-Z</option></select>
+    <div class="multi-select">
+      <button class="multi-select-btn" id="btnFilterKat" onclick="toggleDropdown()">📂 Semua Kategori ▼</button>
+      <div class="multi-dropdown" id="dropdownKat"></div>
+    </div>
+    <select id="checkFilter">
+      <option value="all">Tampilkan Semua</option>
+      <option value="area">Area Saja ☑️</option>
+      <option value="gudang">Gudang Saja ☑️</option>
+    </select>
+  </div>
+  <div class="controls">
+    <button class="btn-atur" onclick="openModal()">⚙️ Kolom</button>
+    <button class="btn-reset-check" onclick="resetCeklis()">🧹 Reset Ceklis</button>
+    <button class="btn-hapus" onclick="hapusData()">🗑️ Hapus Data</button>
+    <button id="resetBtn">Reset Filter</button>
+  </div>
+  <div class="grid" style="margin-top:10px;">
+    <div>Total<br><div class="stat" id="totalProduk">0</div></div>
+    <div>NAOS<br><div class="stat" id="totalNAOS">0</div></div>
+    <div>%NAOS<br><div class="stat" id="pctNAOS">0%</div></div>
+    <div>OOS<br><div class="stat" id="totalOOS">0</div></div>
+    <div>%OOS<br><div class="stat" id="pctOOS">0%</div></div>
+    <div>Terpajang<br><div class="stat green" id="totalTerpajang">0</div></div>
+    <div>Belum<br><div class="stat purple" id="totalBelum">0</div></div>
+    <div>Data<br><div class="stat" id="totalData">0</div></div>
+  </div>
+</div>
+
+<div class="card" id="summaryCard">
+  <div class="summary-header">
+    <h3>📊 SUMMARY PER NODE</h3>
+    <div style="display:flex; gap:6px;">
+      <button class="btn-ss" onclick="screenshotSummary()">📸 Screenshot</button>
+      <button class="btn-hide" id="btnHideSummary" onclick="toggleSummary()">👁️ Hide</button>
+    </div>
+  </div>
+  <div class="summary-grid" id="summaryGrid"></div>
+</div>
+
+<div class="card">
+  <div class="filter-btns">
+    <button class="btn-semua" onclick="showTab('all')">📋 Semua</button>
+    <button class="btn-naos" onclick="showTab('naos')">🟡 NAOS</button>
+    <button class="btn-oos" onclick="showTab('oos')">🔴 OOS</button>
+    <button class="btn-export" onclick="exportExcel()">📊 Export Excel</button>
+  </div>
+  <div class="info-hlm" id="infoHlm"></div>
+  <div id="tblWrapper"><div class="loading" id="loadingText">Auto load data...</div><table id="tblMain" style="display:none;"></table></div>
+  <div class="pager" id="pagerMain"></div>
+</div>
+<div id="colModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header"><h3>Atur Kolom</h3><span class="modal-close" onclick="closeModal()">&times;</span></div>
+    <div class="col-list" id="colList"></div>
+  </div>
+</div>
+</div>
+
+<div id="tab-report" class="tab-content">
+  <div class="card">
+    <h3 style="margin:0 0 8px 0; font-size:14px;">📅 REKAP PERSENTASE HARIAN</h3>
+    <div class="controls-2">
+      <input type="date" id="dateStart">
+      <input type="date" id="dateEnd">
+    </div>
+    <div class="controls-2" style="margin-top:8px;">
+      <button class="btn-save" onclick="saveReport()">💾 Simpan Laporan Hari Ini</button>
+      <button class="btn-export" onclick="loadReport()">📊 Lihat Akumulasi</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 8px 0; font-size:14px;">📈 Tabel Rekap Harian %</h3>
+    <div id="tblWrapper"><table id="tblReport"></table></div>
+  </div>
+  <div class="card" id="summaryReportCard">
+    <div class="summary-header">
+      <h3 id="summaryReportTitle">📊 AKUMULASI PER NODE</h3>
+      <button class="btn-ss" onclick="screenshotReport()">📸 Screenshot</button>
+    </div>
+    <div class="summary-grid" id="summaryReportGrid"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+let rawData = [], dataNAOS=[], dataOOS=[];
+const PAGE_SIZE = 500;
+let page = 1, currentTab='all', currentSort='', currentCheck='all';
+let visibleCols = ['node','article','desc','replen','sales'];
+let summaryHidden = false;
+let selectedNodes = [];
+
+const LS_DATA = 'naos_data_final';
+const LS_CHECKS = 'naos_checks_final';
+const LS_NODES = 'naos_nodes_final';
+const LS_HIDE = 'naos_hide_final';
+const LS_REPORTS = 'naos_reports_v51';
+
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcw_VWQ9-Z2JU87wyKKSruf5p6ZDZgfk3IDTFjt0p-r_NI0h9zcOjx8IQDy9c-UlLUN5JmTm-ggKDi/pub?output=csv';
+const ALL_COLS = {
+  node:'Node', article:'Article', desc:'Deskripsi', replen:'Replen',
+  qoo:'QOO', sales:'Sales', sales_ly:'Sales LY', sales_to:'Sales TO',
+  sales_to_ly:'Sales TO LY', skp:'SKP'
+};
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
+  if(tab==='report'){ renderReportTable(); }
+}
+
+window.onload = async () => {
+  dateStart.value = new Date().toISOString().slice(0,10);
+  dateEnd.value = new Date().toISOString().slice(0,10);
+  const savedData = localStorage.getItem(LS_DATA);
+  const savedHide = localStorage.getItem(LS_HIDE) === 'true';
+  const savedNodes = JSON.parse(localStorage.getItem(LS_NODES) || '[]');
+  selectedNodes = savedNodes;
+  summaryHidden = savedHide;
+  if(savedHide){ summaryGrid.style.display='none'; btnHideSummary.innerHTML='👁️ Show'; }
+  if(savedData){
+    const data = JSON.parse(savedData);
+    initData(data, false);
+    loadingText.style.display='none';
+    tblMain.style.display='table';
+  } else {
+    await btnRefresh.click();
+  }
+  document.addEventListener('click', e => {
+    if(!e.target.closest('.multi-select')){ dropdownKat.style.display='none'; }
+  });
+};
+
+btnRefresh.onclick = async () => {
+  loadingText.style.display='block';
+  tblMain.style.display='none';
+  loadingText.innerHTML = '🔄 Lagi narik data dari Sheet...';
+  try{
+    const res = await fetch(SHEET_URL + '&t=' + Date.now());
+    const txt = await res.text();
+    const data = parseCSV_Rusak(txt);
+    if(data.length===0) throw new Error('Data 0');
+    if(!localStorage.getItem(LS_DATA)){ alert('SUKSES: Kebaca '+data.length+' baris dari Sheet'); }
+    initData(data, true);
+    loadingText.style.display='none';
+    tblMain.style.display='table';
+  }catch(e){
+    loadingText.innerHTML = '❌ GAGAL: Cek koneksi / Link Sheet';
+    console.error(e);
+  }
+};
+
+sortSelect.onchange = e => { currentSort = e.target.value; page=1; renderAll(); };
+checkFilter.onchange = e => { currentCheck = e.target.value; page=1; renderAll(); };
+resetBtn.onclick = () => {
+  currentSort=''; currentCheck='all'; selectedNodes=[];
+  sortSelect.value=''; checkFilter.value='all';
+  updateNodeBtnText(); buildNodeDropdown();
+  page=1; renderAll(); renderSummary();
+};
+
+function hapusData(){
+  if(confirm('Yakin hapus semua data & ceklis?')){
+    localStorage.removeItem(LS_DATA);
+    localStorage.removeItem(LS_CHECKS);
+    localStorage.removeItem(LS_NODES);
+    rawData = []; dataNAOS=[]; dataOOS=[]; selectedNodes=[];
+    renderAll(); renderSummary(); updateNodeBtnText();
+    loadingText.style.display='block';
+    tblMain.style.display='none';
+    loadingText.innerHTML = 'Klik `Tarik Data` dulu bang 👆';
+  }
+}
+
+function resetCeklis(){
+  if(confirm('Yakin reset semua centang Area & Gudang? Data ga kehapus.')){
+    rawData.forEach(r => { r.area_chk = false; r.gudang_chk = false; });
+    localStorage.removeItem(LS_CHECKS);
+    renderAll(); renderSummary();
+    alert('Semua centang udah direset ✅');
+  }
+}
+
+function saveReport(){
+  if(rawData.length===0){ alert('Tarik data dulu bang'); return; }
+  const today = new Date().toISOString().slice(0,10);
+  const reports = JSON.parse(localStorage.getItem(LS_REPORTS) || '{}');
+  const total = rawData.length;
+  const terpajang = rawData.filter(r => r.area_chk).length;
+  const belum = rawData.filter(r => r.gudang_chk).length;
+  const grouped = new Map();
+  rawData.forEach(r=>{
+    const node = r.node || 'Tanpa Node';
+    if(!grouped.has(node)){ grouped.set(node, {total:0, terpajang:0, belum:0}); }
+    const g = grouped.get(node);
+    g.total++;
+    if(r.area_chk) g.terpajang++;
+    if(r.gudang_chk) g.belum++;
+  });
+  reports[today] = {
+    total: total,
+    pctTerpajang: total > 0? (terpajang/total*100).toFixed(1) : 0,
+    pctBelum: total > 0? (belum/total*100).toFixed(1) : 0,
+    nodes: Object.fromEntries(grouped)
+  };
+  localStorage.setItem(LS_REPORTS, JSON.stringify(reports));
+  alert(`Laporan ${today} berhasil disimpan ✅`);
+  renderReportTable();
+}
+
+function renderReportTable(){
+  const reports = JSON.parse(localStorage.getItem(LS_REPORTS) || '{}');
+  const dates = Object.keys(reports).sort().reverse();
+  if(dates.length === 0){
+    tblReport.innerHTML = '<tr><td style="padding:20px;">Belum ada laporan. Klik Simpan Laporan dulu.</td></tr>';
+    return;
+  }
+  const head = '<tr><th>Tanggal</th><th>Total SKU</th><th>%Terpajang</th><th>%Belum</th></tr>';
+  const body = dates.map(d=>{
+    const r = reports[d];
+    return `<tr>
+      <td>${d}</td>
+      <td>${fmtNum(r.total)}</td>
+      <td class="green">${r.pctTerpajang}%</td>
+      <td class="purple">${r.pctBelum}%</td>
+    </tr>`;
+  }).join('');
+  tblReport.innerHTML = head + body;
+}
+
+function loadReport(){
+const start = dateStart.value;
+  const end = dateEnd.value;
+  if(!start ||!end){ alert('Pilih tanggal dulu'); return; }
+  if(start > end){ alert('Tanggal awal > akhir'); return; }
+  const reports = JSON.parse(localStorage.getItem(LS_REPORTS) || '{}');
+  const dates = Object.keys(reports).filter(d => d >= start && d <= end).sort();
+  if(dates.length === 0){ alert('Ga ada laporan di rentang tanggal itu'); return; }
+  const totalAkumulasi = new Map();
+  let grandTotalSKU = 0;
+  let grandTotalT = 0;
+  let grandTotalB = 0;
+  dates.forEach(d => {
+    const dayData = reports[d];
+    grandTotalSKU += dayData.total;
+    grandTotalT += dayData.total * (dayData.pctTerpajang/100);
+    grandTotalB += dayData.total * (dayData.pctBelum/100);
+    Object.keys(dayData.nodes).forEach(node => {
+      if(!totalAkumulasi.has(node)){ totalAkumulasi.set(node, {total:0, terpajang:0, belum:0}); }
+      const g = totalAkumulasi.get(node);
+      g.total += dayData.nodes.total;
+      g.terpajang += dayData.nodes.terpajang;
+      g.belum += dayData.nodes.belum;
+    });
+  });
+  summaryReportTitle.innerHTML = `📊 AKUMULASI ${start} s/d ${end} | ${dates.length} Hari`;
+  const cards = Array.from(totalAkumulasi.keys()).sort().map(node=>{
+    const g = totalAkumulasi.get(node);
+    const pctT = g.total > 0? (g.terpajang/g.total*100).toFixed(1) : 0;
+    const pctB = g.total > 0? (g.belum/g.total*100).toFixed(1) : 0;
+    return `
+      <div class="summary-card">
+        <div class="kat">${node}</div>
+        <div class="total blue">${fmtNum(g.total)} SKU</div>
+        <div class="row"><span>%Terpajang:</span><span class="green">${pctT}%</span></div>
+        <div class="row"><span>%Belum:</span><span class="purple">${pctB}%</span></div>
+      </div>
+    `;
+  }).join('');
+  const pctGrandT = grandTotalSKU > 0? (grandTotalT/grandTotalSKU*100).toFixed(1) : 0;
+  const pctGrandB = grandTotalSKU > 0? (grandTotalB/grandTotalSKU*100).toFixed(1) : 0;
+  const totalCard = `
+    <div class="summary-card" style="border:2px solid var(--accent);">
+      <div class="kat">TOTAL KESELURUHAN</div>
+      <div class="total blue">${fmtNum(grandTotalSKU)} SKU</div>
+      <div class="row"><span>%Terpajang:</span><span class="green">${pctGrandT}%</span></div>
+      <div class="row"><span>%Belum:</span><span class="purple">${pctGrandB}%</span></div>
+    </div>
+  `;
+  summaryReportGrid.innerHTML = totalCard + cards;
+}
+
+async function screenshotReport(){
+  alert('Lagi bikin gambar... Tunggu 2 detik');
+  const canvas = await html2canvas(summaryReportCard, {backgroundColor:'#1e293b', scale:2});
+  const link = document.createElement('a');
+  link.download = 'NAOS_Rekap_'+ new Date().toISOString().slice(0,10) +'.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+function parseCSV_Rusak(text) {
+  const lines = text.trim().split(/\r\n|\n/).filter(l=>l);
+  const headerDelim = lines[0].includes(';')? ';' : ',';
+  const headers = lines[0].split(headerDelim).map(h=>h.replace(/"/g,'').trim());
+  const headerMap = {};
+  headers.forEach(h => { headerMap[h.toLowerCase()] = h; });
+  return lines.slice(1).map(line => {
+    const dataDelim = (line.match(/,/g)||[]).length > (line.match(/;/g)||[]).length? ',' : ';';
+    const values = line.split(dataDelim).map(v=>v.replace(/"/g,'').trim());
+    let obj = {};
+    headers.forEach((h, i) => obj[h] = values[i] || '');
+    obj._map = headerMap;
+    return obj;
+  });
+}
+const toNum = v => parseFloat(String(v).replace(/[^0-9.-]/g,'')) || 0;
+function getVal(r, key){ const h = r._map[key.toLowerCase()]; return h? r[h] : ''; }
+const fmtNum = n => n.toLocaleString('id-ID');
+
+function initData(data, saveData=true){
+  const savedChecks = JSON.parse(localStorage.getItem(LS_CHECKS) || '{}');
+  rawData = data.map(r => {
+    const id = getVal(r,'article code') || getVal(r,'node');
+    return {
+      id: id,
+      node: getVal(r,'node'), article: getVal(r,'article code'), desc: getVal(r,'su description'),
+      replen: toNum(getVal(r,'replen. qty')), qoo: toNum(getVal(r,'quantity on order')),
+      sales: toNum(getVal(r,'sales')), sales_ly: toNum(getVal(r,'sales ly')), sales_to: toNum(getVal(r,'sales to')),
+      sales_to_ly: toNum(getVal(r,'sales to ly')), skp: toNum(getVal(r,'skp')),
+      area_chk: savedChecks[id]?.area || false,
+      gudang_chk: savedChecks[id]?.gudang || false
+    }
+  }).filter(r=>r.node);
+  dataNAOS = rawData.filter(r=> r.replen > 1 && r.sales === 0);
+  dataOOS = rawData.filter(r=> r.replen === 0 && r.sales === 0);
+  if(saveData){ localStorage.setItem(LS_DATA, JSON.stringify(rawData)); }
+  buildNodeDropdown();
+  updateNodeBtnText();
+  updateModalCheckbox();
+  renderAll();
+  renderSummary();
+}
+
+function toggleCheck(id, type, val){
+  const item = rawData.find(r=>r.id===id);
+  if(item){ item[type] = val; }
+  const saveObj = {};
+  rawData.forEach(r=>{ saveObj[r.id] = {area:r.area_chk, gudang:r.gudang_chk}; });
+  localStorage.setItem(LS_CHECKS, JSON.stringify(saveObj));
+  renderAll();
+}
+
+function updateModalCheckbox(){
+  colList.innerHTML = Object.keys(ALL_COLS).map(k=>`
+    <label><input type="checkbox" value="${k}" ${visibleCols.includes(k)?'checked':''} onchange="toggleCol('${k}',this.checked)"> ${ALL_COLS[k]}</label>
+  `).join('');
+}
+function toggleCol(k,on){
+  visibleCols = on? [...visibleCols,k] : visibleCols.filter(x=>x!==k);
+  if(visibleCols.length===0) visibleCols=['node'];
+  renderAll();
+}
+function sortData(arr){ if(!currentSort) return arr; const [k,d]=currentSort.split('_'); return [...arr].sort((a,b)=> typeof a[k]==='number'? d==='asc'?a[k]-b[k]:b[k]-a[k] : d==='asc'?String(a[k]).localeCompare(b[k]):String(b[k]).localeCompare(a[k])); }
+function showTab(tab){ currentTab=tab; page=1; renderAll(); }
+function openModal(){ updateModalCheckbox(); colModal.style.display='block'; }
+function closeModal(){ colModal.style.display='none'; }
+window.onclick = e => { if(e.target==colModal) closeModal(); }
+
+function toggleSummary(){
+  summaryHidden =!summaryHidden;
+  summaryGrid.style.display = summaryHidden? 'none' : 'grid';
+  btnHideSummary.innerHTML = summaryHidden? '👁️ Show' : '👁️ Hide';
+  localStorage.setItem(LS_HIDE, summaryHidden);
+}
+
+function buildNodeDropdown(){
+  const nodes = [...new Set(rawData.map(r=>r.node))].sort();
+  if(nodes.length===0){ dropdownKat.innerHTML='<div style="padding:8px;color:#94a3b8;font-size:12px;">Tarik data dulu</div>'; return; }
+  dropdownKat.innerHTML = `
+    <label><input type="checkbox" id="checkAllNode" ${selectedNodes.length===0?'checked':''} onchange="toggleAllNodes(this.checked)"> <b>Semua Kategori</b></label>
+    <hr style="border:0;border-top:1px solid #334155;margin:6px 0;">
+    ${nodes.map(n=>`
+      <label><input type="checkbox" value="${n}" ${selectedNodes.includes(n)?'checked':''} onchange="toggleNode('${n.replace(/'/g,"\\'")}',this.checked)"> ${n}</label>
+    `).join('')}
+  `;
+}
+function toggleAllNodes(checked){
+  selectedNodes = checked? [] : [];
+  buildNodeDropdown();
+  updateNodeBtnText();
+  localStorage.setItem(LS_NODES, JSON.stringify(selectedNodes));
+  page=1; renderAll(); renderSummary();
+}
+function toggleNode(node, checked){
+  if(checked){
+    if(!selectedNodes.includes(node)) selectedNodes.push(node);
+  } else {
+    selectedNodes = selectedNodes.filter(n=>n!==node);
+  }
+  updateNodeBtnText();
+  localStorage.setItem(LS_NODES, JSON.stringify(selectedNodes));
+  page=1; renderAll(); renderSummary();
+}
+function toggleDropdown(){
+  if(rawData.length===0){ alert('Tarik data dulu bang'); return; }
+  dropdownKat.style.display = dropdownKat.style.display==='block'? 'none' : 'block';
+}
+function updateNodeBtnText(){
+  if(selectedNodes.length===0){ btnFilterKat.innerHTML = '📂 Semua ▼'; }
+  else if(selectedNodes.length===1){ btnFilterKat.innerHTML = `📂 ${selectedNodes[0]} ▼`; }
+  else { btnFilterKat.innerHTML = `📂 ${selectedNodes.length} ▼`; }
+}
+
+async function screenshotSummary(){
+  if(summaryHidden){ alert('Buka dulu Summary nya bang 👁️'); return; }
+  alert('Lagi bikin gambar... Tunggu 2 detik');
+  const canvas = await html2canvas(summaryCard, {backgroundColor:'#1e293b', scale:2});
+  const link = document.createElement('a');
+  link.download = 'NAOS_Summary_'+ new Date().toISOString().slice(0,10) +'.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+function exportExcel(){
+  let baseData = sortData(rawData);
+  if(selectedNodes.length > 0){ baseData = baseData.filter(r => selectedNodes.includes(r.node)); }
+  let filteredData = baseData;
+  if(currentCheck === 'area'){ filteredData = baseData.filter(r => r.area_chk === true); }
+  else if(currentCheck === 'gudang'){ filteredData = baseData.filter(r => r.gudang_chk === true); }
+  let arr = currentTab==='naos'? filteredData.filter(r=> r.replen > 1 && r.sales === 0)
+            : currentTab==='oos'? filteredData.filter(r=> r.replen === 0 && r.sales === 0)
+            : filteredData;
+  if(arr.length===0){ alert('Data kosong, ga bisa export'); return; }
+  const wsData = arr.map(r => {
+    let obj = {};
+    visibleCols.forEach(k => { obj[ALL_COLS[k]] = r[k]; });
+    obj['Area'] = r.area_chk? '☑️' : '';
+    obj['Gudang'] = r.gudang_chk? '☑️' : '';
+    return obj;
+  });
+  const ws = XLSX.utils.json_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "NAOS Data");
+  XLSX.writeFile(wb, "NAOS_Export_"+ new Date().toISOString().slice(0,10) +".xlsx");
+}
+
+function renderSummary(){
+  if(rawData.length===0){ summaryCard.style.display='none'; return; }
+  summaryCard.style.display='block';
+  if(!summaryHidden){ summaryGrid.style.display='grid'; }
+  const grouped = new Map();
+  rawData.forEach(r=>{
+    const node = r.node || 'Tanpa Node';
+    if(!grouped.has(node)){ grouped.set(node, {count:0, naos:0, oos:0, terpajang:0, belum:0}); }
+    const g = grouped.get(node);
+    g.count++;
+    if(r.replen > 1 && r.sales === 0) g.naos++;
+    if(r.replen === 0 && r.sales === 0) g.oos++;
+    if(r.area_chk) g.terpajang++;
+    if(r.gudang_chk) g.belum++;
+  });
+  const cards = Array.from(grouped.keys()).sort().map(node=>{
+    const g = grouped.get(node);
+    const pctNaos = g.count > 0? (g.naos/g.count*100) : 0;
+    const pctOos = g.count > 0? (g.oos/g.count*100) : 0;
+    return `
+      <div class="summary-card">
+        <div class="kat">${node}</div>
+        <div class="total blue">${fmtNum(g.count)}</div>
+        <div class="row"><span>%NAOS:</span><span class="red">${pctNaos.toFixed(1)}%</span></div>
+        <div class="row"><span>NAOS:</span><span class="red">${fmtNum(g.naos)}</span></div>
+        <div class="row"><span>%OOS:</span><span class="red">${pctOos.toFixed(1)}%</span></div>
+        <div class="row"><span>Terpajang:</span><span class="green">${fmtNum(g.terpajang)}</span></div>
+        <div class="row"><span>Belum:</span><span class="purple">${fmtNum(g.belum)}</span></div>
+      </div>
+    `;
+  }).join('');
+  summaryGrid.innerHTML = cards;
+}
+
+function renderAll(){
+  let baseData = sortData(rawData);
+  if(selectedNodes.length > 0){
+    baseData = baseData.filter(r => selectedNodes.includes(r.node));
+  }
+  let filteredData = baseData;
+  if(currentCheck === 'area'){ filteredData = baseData.filter(r => r.area_chk === true); }
+  else if(currentCheck === 'gudang'){ filteredData = baseData.filter(r => r.gudang_chk === true); }
+  const totalTerpajang = rawData.filter(r => r.area_chk).length;
+  const totalBelum = rawData.filter(r => r.gudang_chk).length;
+  totalProduk.textContent = rawData.length.toLocaleString('id');
+  totalNAOS.textContent = dataNAOS.length.toLocaleString('id');
+  pctNAOS.textContent = rawData.length? (dataNAOS.length/rawData.length*100).toFixed(1)+'%' : '0%';
+  totalOOS.textContent = dataOOS.length.toLocaleString('id');
+  pctOOS.textContent = rawData.length? (dataOOS.length/rawData.length*100).toFixed(1)+'%' : '0%';
+  totalTerpajang.textContent = fmtNum(totalTerpajang);
+  totalBelum.textContent = fmtNum(totalBelum);
+  totalData.textContent = filteredData.length.toLocaleString('id');
+
+  let arr = currentTab==='naos'? filteredData.filter(r=> r.replen > 1 && r.sales === 0)
+            : currentTab==='oos'? filteredData.filter(r=> r.replen === 0 && r.sales === 0)
+            : filteredData;
+
+  const tp=Math.ceil(arr.length/PAGE_SIZE), p=page, st=(p-1)*PAGE_SIZE, d=arr.slice(st,st+PAGE_SIZE);
+  infoHlm.textContent = `Hlm ${p}/${tp} | ${st+1}-${Math.min(st+PAGE_SIZE,arr.length)}/${arr.length}`;
+
+  const head = '<tr>' +
+    visibleCols.map(k=>`<th class="${k==='desc'?'text-left':''}">${ALL_COLS[k]}</th>`).join('') +
+    '<th>A</th><th>G</th>' +
+    '</tr>';
+
+  const body = d.map(r=>{
+    let cls = '';
+    if(r.replen===0&&r.sales===0) cls = 'oos-row';
+    else if(r.replen>1&&r.sales===0) cls = 'naos-row';
+    return `<tr class="${cls}">` +
+      visibleCols.map(k=>`<td class="${k==='desc'?'text-left':''}">${r[k]}</td>`).join('') +
+      `<td><input type="checkbox" ${r.area_chk?'checked':''} onchange="toggleCheck('${r.id}','area_chk',this.checked)"></td>` +
+      `<td><input type="checkbox" ${r.gudang_chk?'checked':''} onchange="toggleCheck('${r.id}','gudang_chk',this.checked)"></td>` +
+      '</tr>';
+  }).join('');
+  tblMain.innerHTML = head + body;
+  pagerMain.innerHTML = `<button ${p<=1?'disabled':''} onclick="go(${p-1})">⬅️500</button><span>${p}/${tp}</span><button ${p>=tp?'disabled':''} onclick="go(${p+1})">500➡️</button>`;
+}
+function go(p){page=p;renderAll();}
+</script>
+</body>
+</html>
